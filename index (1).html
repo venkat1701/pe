@@ -1,0 +1,1906 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ANVIL — Problem Statements / Technical Council Draft / Vol. XII</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0c0b09;
+    --ink-2: #15130f;
+    --paper: #ece4d4;
+    --paper-dim: #c9c1b1;
+    --rule: #2a2620;
+    --rule-2: #1c1916;
+    --mute: #6a6358;
+    --mute-2: #4a443c;
+    --ember: #ff6a1a;
+    --ember-dim: #b94a10;
+    --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --display: "Instrument Serif", "Newsreader", Georgia, serif;
+    --mono: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--ink); color: var(--paper); }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--serif);
+    font-weight: 400;
+    line-height: 1.62;
+    font-size: 17px;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern", "liga", "calt";
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,106,26,0.04), transparent 60%),
+      radial-gradient(900px 700px at -10% 110%, rgba(255,106,26,0.025), transparent 60%),
+      var(--ink);
+  }
+
+  /* paper grain */
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 2;
+    opacity: 0.55; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.92  0 0 0 0 0.88  0 0 0 0 0.82  0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .vignette {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%);
+  }
+
+  /* page frame + crosshairs */
+  .frame { position: relative; z-index: 3; max-width: 1320px; margin: 0 auto; padding: 28px 56px 80px; }
+  .crosshair {
+    position: fixed; width: 18px; height: 18px; z-index: 4; pointer-events: none;
+    color: var(--mute-2);
+  }
+  .crosshair::before, .crosshair::after {
+    content: ""; position: absolute; background: currentColor;
+  }
+  .crosshair::before { left: 50%; top: 0; bottom: 0; width: 1px; transform: translateX(-0.5px); }
+  .crosshair::after { top: 50%; left: 0; right: 0; height: 1px; transform: translateY(-0.5px); }
+  .crosshair.tl { top: 22px; left: 22px; }
+  .crosshair.tr { top: 22px; right: 22px; }
+  .crosshair.bl { bottom: 22px; left: 22px; }
+  .crosshair.br { bottom: 22px; right: 22px; }
+
+  /* watermark */
+  .watermark {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .watermark span {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: clamp(180px, 28vw, 460px);
+    color: rgba(236, 228, 212, 0.018);
+    letter-spacing: -0.04em;
+    transform: rotate(-22deg);
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  /* header */
+  header.masthead {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--rule);
+    gap: 24px;
+  }
+  .mast-left, .mast-right { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mute); line-height: 1.7; font-weight: 400; }
+  .mast-left a, .mast-right a {
+    color: var(--paper-dim);
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+  .mast-left a:hover, .mast-right a:hover {
+    color: var(--ember);
+    border-color: var(--ember);
+  }
+  .mast-right { text-align: right; }
+  .mast-right .now { color: var(--paper-dim); }
+  .mast-center { text-align: center; }
+  .mast-center .word {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: 58px;
+    letter-spacing: 0.44em;
+    text-indent: 0.44em;
+    color: var(--paper);
+    line-height: 1;
+    font-feature-settings: "kern" off;
+  }
+  .mast-center .sub {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.36em; text-transform: uppercase;
+    color: var(--mute); margin-top: 14px;
+  }
+
+  /* subheader strip */
+  .substrip {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute);
+  }
+  .substrip .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--paper-dim);
+  }
+  .substrip .pill .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ember);
+    box-shadow: 0 0 8px var(--ember), 0 0 18px rgba(255,106,26,0.6);
+    animation: ember 2.4s ease-in-out infinite;
+  }
+  @keyframes ember {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50%      { opacity: 1.0; transform: scale(1.18); }
+  }
+
+  /* tabs */
+  nav.tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--rule);
+    margin-top: 22px;
+  }
+  .tab {
+    position: relative;
+    padding: 22px 22px 22px 22px;
+    text-align: left;
+    background: none; border: 0; color: inherit;
+    cursor: pointer;
+    font: inherit;
+    border-right: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: 14px 1fr;
+    row-gap: 16px; column-gap: 14px;
+    align-items: start;
+    min-height: 108px;
+    transition: background 220ms ease;
+  }
+  .tab:first-child { padding-left: 0; }
+  .tab:last-child { border-right: 0; padding-right: 0; }
+  .tab:hover { background: rgba(255,106,26,0.03); }
+  .tab .idx {
+    grid-column: 1; grid-row: 1;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase;
+    color: var(--mute); font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    align-self: center;
+  }
+  .tab .meta {
+    grid-column: 2; grid-row: 1;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--mute);
+    text-align: right;
+    white-space: nowrap;
+    align-self: center;
+  }
+  .tab .name {
+    grid-column: 1 / -1; grid-row: 2;
+    font-family: var(--serif);
+    font-weight: 460;
+    font-size: 20px; line-height: 1.2; letter-spacing: -0.005em;
+    color: var(--paper-dim);
+    max-width: 32ch;
+    font-optical-sizing: auto;
+    align-self: start;
+  }
+  .tab[aria-selected="true"] .name { color: var(--paper); }
+  .tab[aria-selected="true"] .idx { color: var(--ember); }
+  .tab[aria-selected="true"] .meta { color: var(--paper-dim); }
+  .tab[aria-selected="true"]::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+    background: var(--ember);
+    box-shadow: 0 0 14px rgba(255,106,26,0.55);
+  }
+
+  /* panels */
+  main { position: relative; }
+  .panel {
+    display: none;
+    padding: 56px 0 24px;
+    animation: rise 480ms cubic-bezier(.2,.7,.2,1);
+  }
+  .panel[data-active="true"] { display: grid; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel {
+    grid-template-columns: 280px 1fr;
+    gap: 56px;
+  }
+
+  /* sidebar */
+  .side {
+    border-right: 1px solid var(--rule);
+    padding-right: 32px;
+    align-self: start;
+    position: sticky; top: 24px;
+  }
+  .side .lbl {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.26em; text-transform: uppercase;
+    color: var(--mute); margin-top: 22px; margin-bottom: 8px; font-weight: 500;
+  }
+  .side .lbl:first-child { margin-top: 0; }
+  .side .val {
+    font-family: var(--serif); font-size: 15px; color: var(--paper); line-height: 1.45;
+    font-optical-sizing: auto;
+  }
+  .side .val.mono { font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em; }
+  .side .stamp {
+    display: inline-block; border: 1px solid var(--ember); color: var(--ember);
+    padding: 6px 10px; font-family: var(--mono); font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+    transform: rotate(-3deg); margin-top: 8px;
+  }
+  .side .stamp.muted { border-color: var(--mute-2); color: var(--mute); }
+  .side .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  .side .tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    border: 1px solid var(--rule); color: var(--paper-dim);
+    padding: 3px 8px;
+  }
+  .side .judging { font-family: var(--mono); font-size: 11.5px; color: var(--paper-dim); }
+  .side .judging .row { display: grid; grid-template-columns: 1fr auto; padding: 5px 0; border-bottom: 1px dashed var(--rule-2); }
+  .side .judging .row:last-child { border-bottom: 0; }
+  .side .judging .row span:last-child { color: var(--ember); }
+  .side .marginalia {
+    font-family: var(--mono); font-size: 10.5px; line-height: 1.55;
+    color: var(--mute); margin-top: 24px; max-width: 28ch;
+    border-left: 1px solid var(--rule); padding-left: 12px;
+  }
+
+  /* article */
+  article .eyebrow {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--ember); margin-bottom: 18px; font-weight: 500;
+  }
+  article h1.title {
+    font-family: var(--display); font-style: italic; font-weight: 400;
+    font-size: clamp(44px, 5.6vw, 82px);
+    line-height: 1.02; letter-spacing: -0.012em;
+    color: var(--paper);
+    margin-bottom: 20px;
+    font-optical-sizing: auto;
+  }
+  article h1.title .amp {
+    font-style: italic;
+    color: var(--ember);
+  }
+  article .lede {
+    font-family: var(--serif);
+    font-size: 21px; line-height: 1.5; font-weight: 380;
+    color: var(--paper-dim);
+    max-width: 62ch;
+    border-top: 1px solid var(--rule);
+    padding-top: 24px; margin-top: 24px;
+    font-optical-sizing: auto;
+    letter-spacing: -0.002em;
+  }
+  article .lede em { font-style: italic; color: var(--paper); }
+
+  article h2 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 26px; letter-spacing: -0.012em;
+    color: var(--paper);
+    margin: 48px 0 16px;
+    display: flex; align-items: baseline; gap: 14px;
+    font-optical-sizing: auto;
+    line-height: 1.2;
+  }
+  article h2::before {
+    content: "§"; color: var(--ember);
+    font-family: var(--display); font-style: normal;
+    font-size: 22px; font-weight: 400;
+    transform: translateY(-1px);
+  }
+  article h3 {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--mute); font-weight: 500;
+    margin: 28px 0 8px;
+  }
+  article p {
+    max-width: 64ch; margin-bottom: 16px; color: var(--paper);
+    font-optical-sizing: auto;
+  }
+  article p.muted { color: var(--paper-dim); }
+  article ul, article ol { padding-left: 0; list-style: none; max-width: 64ch; margin-bottom: 22px; }
+  article li {
+    padding: 12px 0 12px 32px; position: relative;
+    border-bottom: 1px dashed var(--rule-2);
+    color: var(--paper);
+    line-height: 1.55;
+  }
+  article li:last-child { border-bottom: 0; }
+  article li::before {
+    content: ""; position: absolute; left: 0; top: 22px;
+    width: 18px; height: 1px; background: var(--ember);
+  }
+  article li .k {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--mute); display: block; margin-bottom: 4px; font-weight: 500;
+  }
+  article code, article kbd {
+    font-family: var(--mono); font-size: 0.86em;
+    background: var(--ink-2); border: 1px solid var(--rule);
+    padding: 1px 6px; color: var(--paper);
+    letter-spacing: 0;
+  }
+  article em { font-style: italic; color: var(--paper); }
+  article strong { font-weight: 500; color: var(--paper); letter-spacing: -0.002em; }
+
+  article .callout {
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--ember);
+    padding: 22px 26px 24px;
+    margin: 28px 0;
+    max-width: 64ch;
+    background: linear-gradient(180deg, rgba(255,106,26,0.025), transparent 70%);
+  }
+  article .callout .lbl {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--ember); margin-bottom: 10px; font-weight: 500;
+  }
+  article .callout blockquote {
+    font-family: var(--display); font-style: italic; font-size: 24px; line-height: 1.32;
+    color: var(--paper); letter-spacing: -0.005em;
+  }
+
+  /* eval table */
+  table.eval {
+    width: 100%; max-width: 68ch;
+    border-collapse: collapse;
+    font-family: var(--mono); font-size: 12.5px;
+    margin: 18px 0 8px;
+  }
+  table.eval th, table.eval td {
+    text-align: left; padding: 10px 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  table.eval th {
+    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--mute); font-weight: 500;
+  }
+  table.eval td.area { color: var(--paper); }
+  table.eval td.desc { color: var(--paper-dim); font-family: var(--serif); font-size: 14.5px; }
+
+  /* placeholder */
+  .placeholder {
+    border: 1px dashed var(--rule);
+    padding: 64px 48px;
+    text-align: left;
+    margin-top: 12px;
+    max-width: 68ch;
+    background: linear-gradient(180deg, transparent, rgba(255,106,26,0.012));
+  }
+  .placeholder .blink {
+    display: inline-block; width: 9px; height: 14px; background: var(--ember);
+    vertical-align: -2px; margin-left: 6px;
+    animation: blink 1.1s steps(2) infinite;
+    box-shadow: 0 0 10px rgba(255,106,26,0.55);
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .placeholder .stripe {
+    height: 6px; width: 64px; background: var(--ember); margin-bottom: 22px;
+  }
+  .placeholder h2 { margin-top: 0; }
+  .placeholder .seq {
+    margin-top: 18px;
+    font-family: var(--mono); font-size: 11px; color: var(--mute); letter-spacing: 0.04em;
+    line-height: 1.9;
+  }
+  .placeholder .seq .ok { color: var(--paper-dim); }
+  .placeholder .seq .pend { color: var(--ember); }
+
+  /* ====== spec annex ====== */
+  .annex {
+    margin-top: 64px;
+    padding-top: 36px;
+    border-top: 2px solid var(--ember);
+    max-width: 92ch;
+    min-width: 0;
+  }
+  .annex-head { margin-bottom: 28px; }
+  .annex-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--ember); font-weight: 500;
+  }
+  .annex-title {
+    font-family: var(--serif); font-weight: 500;
+    font-size: 26px; letter-spacing: -0.012em;
+    color: var(--paper); margin-top: 10px;
+    font-optical-sizing: auto;
+  }
+  .annex-meta {
+    font-family: var(--mono); font-size: 10.5px; color: var(--mute);
+    margin-top: 8px; letter-spacing: 0.04em;
+    max-width: 64ch; line-height: 1.55;
+  }
+  .annex .field {
+    display: grid;
+    grid-template-columns: 144px minmax(0, 1fr);
+    gap: 28px;
+    padding: 20px 0 22px;
+    border-top: 1px solid var(--rule);
+    align-items: start;
+  }
+  .annex .field:last-child { border-bottom: 1px solid var(--rule); }
+  .annex .field-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--mute); font-weight: 500; padding-top: 4px;
+    line-height: 1.5;
+  }
+  .annex .field-body {
+    color: var(--paper);
+    min-width: 0;        /* critical: lets wide <pre> scroll instead of expanding the grid column */
+    overflow: hidden;     /* keeps the cell honest — no content escapes horizontally */
+  }
+  .annex .field-body > p {
+    margin: 0 0 10px; font-size: 15px; line-height: 1.55;
+    max-width: none;
+  }
+  .annex .field-body > p:last-child { margin-bottom: 0; }
+  .annex .field-body p.muted { color: var(--paper-dim); }
+  .annex .field-body ul,
+  .annex .field-body ol {
+    max-width: none; margin: 4px 0 0; padding-left: 0;
+  }
+  .annex .field-body li {
+    padding: 6px 0 6px 22px;
+    font-size: 14.5px; line-height: 1.5;
+    border-bottom: 1px dashed var(--rule-2);
+  }
+  .annex .field-body li:last-child { border-bottom: 0; }
+  .annex .field-body li::before {
+    top: 15px; width: 12px;
+  }
+  .annex .field-body li .k {
+    font-size: 9.5px; letter-spacing: 0.2em; margin-bottom: 2px;
+  }
+  .annex pre {
+    background: var(--ink-2);
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--ember);
+    padding: 14px 18px 18px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    font-family: var(--mono); font-size: 11.5px;
+    line-height: 1.6;
+    color: var(--paper);
+    margin: 8px 0;
+    letter-spacing: 0;
+    position: relative;
+    border-radius: 0;
+    max-width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+  .annex pre::-webkit-scrollbar {
+    height: 8px;
+    background: transparent;
+  }
+  .annex pre::-webkit-scrollbar-track {
+    background: transparent;
+    border-top: 1px solid var(--rule-2);
+  }
+  .annex pre::-webkit-scrollbar-thumb {
+    background: var(--rule);
+    border-radius: 0;
+  }
+  .annex pre::-webkit-scrollbar-thumb:hover {
+    background: var(--ember-dim);
+  }
+  .annex pre .tag {
+    position: absolute; top: 8px; right: 12px;
+    font-size: 9.5px; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--mute);
+    background: var(--ink-2);
+    padding: 2px 6px;
+    pointer-events: none;
+  }
+  .annex pre code {
+    background: none; border: 0; padding: 0; font-size: inherit;
+    color: inherit; letter-spacing: 0;
+    display: block;
+    white-space: pre;
+  }
+  .annex .kv {
+    display: grid; grid-template-columns: 1fr auto;
+    font-family: var(--mono); font-size: 12.5px;
+    border-top: 1px dashed var(--rule-2);
+    column-gap: 16px;
+  }
+  .annex .kv:first-of-type { border-top: 0; }
+  .annex .kv > div { padding: 7px 0; }
+  .annex .kv > div:first-child { color: var(--mute); letter-spacing: 0.04em; }
+  .annex .kv > div:last-child { color: var(--paper); text-align: right; }
+  @media (max-width: 980px) {
+    .annex .field { grid-template-columns: 1fr; gap: 8px; }
+  }
+
+  /* footer */
+  footer.colophon {
+    margin-top: 64px; padding-top: 16px;
+    border-top: 1px solid var(--rule);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--mute);
+  }
+  footer .kbd {
+    display: inline-flex; gap: 6px; align-items: center;
+  }
+  footer .kbd kbd {
+    border: 1px solid var(--rule); padding: 2px 6px; color: var(--paper-dim); background: var(--ink-2);
+    font-size: 9.5px; letter-spacing: 0.08em;
+  }
+
+  /* responsive */
+  @media (max-width: 980px) {
+    .frame { padding: 22px 22px 60px; }
+    nav.tabs { grid-template-columns: 1fr 1fr; }
+    .tab { border-bottom: 1px solid var(--rule); }
+    .tab:nth-child(2) { border-right: 0; }
+    .panel { grid-template-columns: 1fr; gap: 24px; }
+    .side { border-right: 0; border-bottom: 1px solid var(--rule); padding-right: 0; padding-bottom: 22px; position: static; }
+    .mast-center .word { font-size: 44px; }
+    article h1.title { font-size: 56px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="watermark"><span>Working&nbsp;Draft</span></div>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<div class="crosshair tl"></div>
+<div class="crosshair tr"></div>
+<div class="crosshair bl"></div>
+<div class="crosshair br"></div>
+
+<div class="frame">
+
+  <header class="masthead">
+    <div class="mast-left">
+      File: /anvil/2026/problems.tex<br>
+      Owner: Technical Council<br>
+      Bench: <a href="https://github.com/Sauhard74/Anvil-P-E" target="_blank" rel="noopener">github.com/Sauhard74/Anvil-P&amp;E</a>
+    </div>
+    <div class="mast-center">
+      <div class="word">ANVIL</div>
+      <div class="sub">Problem Statements · Vol. XII · MMXXVI</div>
+    </div>
+    <div class="mast-right">
+      <span class="now">Rev. 14·05·2026</span><br>
+      Classification — Internal
+    </div>
+  </header>
+
+  <div class="substrip">
+    <div class="pill"><span class="dot"></span><span>Status — 04/04 Finalized</span></div>
+    <div>Anvil — Hackathon · 24 Hours · Bangalore</div>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Problem statements">
+    <button class="tab" role="tab" aria-controls="ps-1" aria-selected="true" data-idx="1">
+      <span class="idx">P · 01 — Open Track</span>
+      <span class="meta">Finalized</span>
+      <span class="name">Conflict-Free Collaborative OLTP</span>
+    </button>
+    <button class="tab" role="tab" aria-controls="ps-2" aria-selected="false" data-idx="2">
+      <span class="idx">P · 02 — Open Track</span>
+      <span class="meta">Finalized</span>
+      <span class="name">Persistent Context Engine for AI SRE</span>
+    </button>
+    <button class="tab" role="tab" aria-controls="ps-3" aria-selected="false" data-idx="3">
+      <span class="idx">P · 03 — Sponsored · Omium</span>
+      <span class="meta">Finalized</span>
+      <span class="name">Autonomous Multi-Agent Pipelines</span>
+    </button>
+    <button class="tab" role="tab" aria-controls="ps-4" aria-selected="false" data-idx="4">
+      <span class="idx">P · 04 — Sponsored · MetaCognition</span>
+      <span class="meta">Finalized</span>
+      <span class="name">Precision-Controlled Associative Memory</span>
+    </button>
+  </nav>
+
+  <main>
+
+    <!-- ============== P-01 : CRDT-NATIVE OLTP ============== -->
+    <section class="panel" id="ps-1" role="tabpanel" aria-labelledby="tab-1" data-active="true">
+      <aside class="side">
+        <div class="lbl">Track</div>
+        <div class="val">Open · Independent</div>
+
+        <div class="lbl">Status</div>
+        <div><span class="stamp">★ Finalized</span></div>
+
+        <div class="lbl">Domain</div>
+        <div class="val">Distributed Databases · Systems</div>
+
+        <div class="lbl">Difficulty</div>
+        <div class="val mono">★★★★☆ — Adversarial</div>
+
+        <div class="lbl">Surface Tags</div>
+        <div class="tags">
+          <span class="tag">CRDT</span>
+          <span class="tag">OLTP</span>
+          <span class="tag">Local-First</span>
+          <span class="tag">Consistency</span>
+          <span class="tag">Sync Protocol</span>
+        </div>
+
+        <div class="lbl">Judging Weight</div>
+        <div class="judging">
+          <div class="row"><span>Merge correctness</span><span>40</span></div>
+          <div class="row"><span>Uniqueness / FK protocol</span><span>25</span></div>
+          <div class="row"><span>Sync design</span><span>15</span></div>
+          <div class="row"><span>Demo (offline ⇄ online)</span><span>10</span></div>
+          <div class="row"><span>Architectural defense</span><span>10</span></div>
+        </div>
+
+        <div class="marginalia">
+          // Replicache, ElectricSQL, PowerSync ship<br>
+          // partial answers. The relational story<br>
+          // remains open. A hackathon-grade attempt<br>
+          // is a credible founder narrative.
+        </div>
+      </aside>
+
+      <article>
+        <div class="eyebrow">Problem · 01 / 04 — Open Track</div>
+        <h1 class="title">A database that never <span class="amp">disagrees</span>, even when nobody is online.</h1>
+        <p class="lede">
+          Build an embeddable OLTP engine whose external surface looks like SQLite — <em>tables, secondary indexes, joins, foreign-key cascades, uniqueness</em> — and whose internal representation is CRDT all the way down. Multiple writers mutate locally without coordination. Merges converge. Invariants survive.
+        </p>
+
+        <h2>Motivation</h2>
+        <p>
+          Local-first applications, multi-region deployments, and offline-tolerant systems all break against the same wall. CRDTs have solved blobs, registers, sequences, and sets. The relational primitives developers actually <em>use</em> — secondary indexes under concurrent inserts, foreign-key cascades under partition, range queries with deterministic order, uniqueness constraints — collapse the moment two writers diverge. Replicache, ElectricSQL, PowerSync, and Y-sweet each ship a partial answer. The full relational story remains open. It is a real systems problem with a real commercial wedge.
+        </p>
+
+        <h2>Challenge</h2>
+        <p>
+          Identify which relational invariants are <em>natively</em> CRDT-expressible (set membership, last-writer-wins fields, monotonic counters), which require lattice-respecting encoding (multi-value registers for conflicting cell writes, observed-remove sets for membership under concurrent insert/delete), and which fundamentally require a coordination protocol (uniqueness, escrow-style constraints, foreign-key existence under deletion). For each category, defend a chosen semantics and prove convergence — informally but rigorously.
+        </p>
+
+        <h2>Required Capabilities</h2>
+        <ul>
+          <li><span class="k">SQL Surface</span><code>CREATE TABLE</code> with a primary key and at least one secondary index. <code>INSERT</code> / <code>UPDATE</code> / <code>DELETE</code> over N concurrent peers without a coordinator.</li>
+          <li><span class="k">Deterministic Reads</span>Range queries that return a deterministically merged result regardless of the order in which peer updates were applied.</li>
+          <li><span class="k">Foreign Keys</span>Cascade behavior under partition with a chosen, documented, defended semantics — not silence.</li>
+          <li><span class="k">Uniqueness</span>At least one uniqueness constraint enforced via an explicit escrow or reservation protocol. Pure CRDTs cannot do this. Address it directly.</li>
+          <li><span class="k">Sync</span>A pairwise sync protocol with bounded metadata and a written argument for eventual convergence.</li>
+        </ul>
+
+        <h2>Stretch Vectors</h2>
+        <ul>
+          <li><span class="k">Bitemporal</span>Transaction-time and valid-time queries over the merged history.</li>
+          <li><span class="k">Causal Reads</span>Monotonic-read and read-your-writes guarantees at the client.</li>
+          <li><span class="k">Schema Migration</span>Online schema change under partition — the unsolved final boss.</li>
+        </ul>
+
+        <h2>Anti-Patterns · Auto-Disqualifying</h2>
+        <ul>
+          <li><span class="k">Server-Authoritative + Optimistic UI</span>This is the problem being solved, not the solution. Submissions that fall back to a single source of truth on conflict will be rejected.</li>
+          <li><span class="k">Row-Level LWW</span>Last-writer-wins on the entire row is degenerate and fails on any non-trivial schema. Cell-level resolution is the floor.</li>
+          <li><span class="k">Unbounded Metadata</span>Vector clocks or version vectors that grow without bound in writer count. Garbage collection is part of the protocol, not an afterthought.</li>
+        </ul>
+
+        <h2>Deliverable</h2>
+        <p>
+          A working engine — Rust + WASM, TypeScript + IndexedDB, or any language with strong type discipline. Two laptops offline. Both <code>INSERT</code> rows. Both <code>UPDATE</code> different columns of the same row. One <code>DELETE</code>s a parent row while the other <code>INSERT</code>s a child. Reconnect over an unreliable network. Show: a deterministic merged state on both peers, a transcript of how each invariant was preserved, and a five-page architectural defense of every coordination decision you made.
+        </p>
+
+        <div class="callout">
+          <div class="lbl">Editorial Note</div>
+          <blockquote>
+            The interesting code is not in the SQL parser. It is in the moments where the lattice breaks and you have to pick — and own — a coordination protocol.
+          </blockquote>
+        </div>
+
+        <section class="annex" aria-label="Spec annex">
+          <div class="annex-head">
+            <div class="annex-label">Annex A — Operational Contract</div>
+            <div class="annex-title">What to ship, how to ship it, how it will be judged.</div>
+            <div class="annex-meta">This section is binding. Where the manifesto above is open to interpretation, the annex is not. If your design disagrees with the annex, the annex wins.</div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Interface · Surface</div>
+            <div class="field-body">
+              <p>The engine ships as <strong>either</strong> an embedded library OR a local-process daemon speaking a documented wire protocol. Pick one and stay with it.</p>
+              <pre><span class="tag">Embedded</span><code>db = open("./mydb", peer_id="A")
+db.execute("CREATE TABLE ...")
+db.execute("INSERT ...")
+db.sync_with(peer_b)            # pairwise, bidirectional
+state_hash = db.snapshot_hash()</code></pre>
+              <pre><span class="tag">Daemon</span><code>POST /sql        { "stmt": "INSERT ...", "params": [...] }
+POST /sync       { "peer": "B", "since": "&lt;cursor&gt;" }
+GET  /snapshot   -&gt; { "hash": "...", "tables": {...} }</code></pre>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Reference Schema</div>
+            <div class="field-body">
+              <p>All teams test against the same schema. Custom schemas are permitted in writeup discussion but not in the judged scenario.</p>
+              <pre><span class="tag">SQL</span><code>CREATE TABLE users (
+  id    TEXT PRIMARY KEY,
+  email TEXT NOT NULL UNIQUE,
+  name  TEXT
+);
+
+CREATE TABLE orders (
+  id          TEXT PRIMARY KEY,
+  user_id     TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status      TEXT NOT NULL,
+  total_cents INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX orders_by_user ON orders(user_id, status);</code></pre>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Reference Scenario</div>
+            <div class="field-body">
+              <p>Three peers A · B · C. All start empty and disconnected. Operations execute locally in the order shown.</p>
+              <p class="muted">Sync semantics — <code>Sync(a, b)</code> is symmetric and bidirectional. Either argument may initiate; on return both peers reflect each other's known state per the engine's merge rules. Peer state changes only via local execution or sync; there is no broadcast.</p>
+              <pre><span class="tag">Trace</span><code>A: INSERT users (u1, alice@x.com, "Alice")
+A: INSERT users (u2, bob@x.com,   "Bob")
+B: INSERT users (u3, alice@x.com, "Alice'")   # uniqueness conflict on email
+C: (after one-way sync from A — holds u1, u2)
+C: DELETE users WHERE id = u1                 # parent delete under partition
+A: INSERT orders (o1, u1, "pending", 1200)    # child insert vs deleted parent
+A: UPDATE users SET name  = 'Alice Cooper'    WHERE id = u1
+B: UPDATE users SET email = 'alice@ex.org'    WHERE id = u1   # cell-level conflict
+
+# Pairwise sync A↔B ↔ B↔C ↔ A↔C until quiescent.</code></pre>
+              <p class="muted">Required assertions, run by judges:</p>
+              <ul>
+                <li>Bit-identical merged state across A, B, C — verified by snapshot hash.</li>
+                <li>Uniqueness invariant on <code>users.email</code> holds. The winning row is documented and the loser is recoverable (not silently dropped).</li>
+                <li>Foreign-key behavior for <code>o1</code> against the deleted <code>u1</code> is documented and consistent with your stated semantics (kept-with-tombstone / cascaded / promoted-to-orphan — your choice, but pick one and defend it).</li>
+                <li>Cell-level merge on <code>users.u1</code> preserves both updates (name and email) without whole-row LWW.</li>
+                <li>Convergence is invariant under sync ordering: a randomized re-run produces the same final hash.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Metadata Bound</div>
+            <div class="field-body">
+              <p>Sync metadata per row must be bounded by <strong>O(writers)</strong>, where <em>writers</em> is the count of distinct peers that have written that row. Version vectors / vector clocks that grow per <em>write</em> are auto-disqualifying. Garbage collection is part of the protocol, not an afterthought.</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">FK Policy · Declaration</div>
+            <div class="field-body">
+              <p>Foreign-key behaviour under partition is not a per-row choice. Your engine <strong>declares one policy as a first-class property</strong>, applied uniformly across every FK conflict, every table, every run. Three policies are accepted:</p>
+              <ul>
+                <li><span class="k">cascade</span>The child row vanishes with the parent. Implementation cost: lowest. Concurrent child writes that referenced the deleted parent are lost — you must defend this trade-off in the writeup.</li>
+                <li><span class="k">tombstone</span>The child row survives. Its <code>user_id</code> column references a tombstoned row preserved in metadata. Queries see the child; the engine documents that the parent is logically deleted but referentially live.</li>
+                <li><span class="k">orphan</span>The child row survives with <code>user_id</code> set to <code>NULL</code> or a documented sentinel. The relationship is severed; the child stands alone.</li>
+              </ul>
+              <p>You declare the policy to the benchmark via <code>--fk-policy {cascade|tombstone|orphan}</code>. The harness asserts observed state matches the declaration on the <code>(o1, u1)</code> conflict in the reference scenario. <em>Switching policy mid-run, or picking different policies for different tables, is disqualifying</em> — one principled choice, defended in the writeup.</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Dependencies</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Permitted</span>Existing CRDT primitives (Automerge, Yjs, Loro, Diamond Types, Y-CRDT) used as register / sequence / set building blocks. The <em>relational</em> layer — indexes, joins, FK, uniqueness, query — must be your own work.</li>
+                <li><span class="k">Forbidden</span>Using a server-side relational engine (Postgres / MySQL / SQLite as authoritative store) as the merged source of truth. SQLite as a local read-side cache is fine.</li>
+                <li><span class="k">Required</span>Disclose every dependency in your README, including version pins.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Constraints</div>
+            <div class="field-body">
+              <div class="kv"><div>Team size</div><div>1 – 4</div></div>
+              <div class="kv"><div>Time</div><div>24 hours</div></div>
+              <div class="kv"><div>Language</div><div>Open</div></div>
+              <div class="kv"><div>Hardware</div><div>Commodity laptop · Linux or macOS</div></div>
+              <div class="kv"><div>Network</div><div>Local-only; no cloud calls in the judged scenario</div></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Submission</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Repository</span>Git link, public or private. Apache-2.0 / MIT preferred.</li>
+                <li><span class="k">Quickstart</span>README must produce a green run on a clean machine in under 5 minutes.</li>
+                <li><span class="k">Reproducibility</span>Dockerfile, Nix flake, or equivalent. The reference scenario must produce a bit-identical hash on judges' machines.</li>
+                <li><span class="k">Demo</span>5-minute screen-recorded walkthrough of the reference scenario.</li>
+                <li><span class="k">Writeup</span>3-page PDF defending: lattice choices per type, uniqueness protocol, FK protocol, sync protocol, metadata-growth analysis.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Judging Mechanics</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Automated</span>Judges run the reference scenario container. Check merged-state hash determinism and all invariants listed above.</li>
+                <li><span class="k">Chaos</span>A hidden variant reorders the operation trace with a fresh random seed. Final state must hash identically to the original run.</li>
+                <li><span class="k">Manual</span>Writeup graded on architectural defense, particularly the uniqueness and FK protocols.</li>
+                <li><span class="k">Live</span>15-minute Q&amp;A. Expect questions on convergence proofs and corner cases.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Bench · Run It Yourself</div>
+            <div class="field-body">
+              <p>The full evaluation harness is open and runs on your machine. Pure Python, stdlib only, no network access, no external dependencies. Five steps from clone to score.</p>
+              <ol>
+                <li><span class="k">Step 1 · Clone</span>
+                  <pre><span class="tag">Shell</span><code>git clone https://github.com/Sauhard74/Anvil-P-E
+cd Anvil-P-E/bench-p01-crdt</code></pre>
+                </li>
+                <li><span class="k">Step 2 · Read the interface</span>
+                  Open <code>adapter.py</code>. Seven methods every submission must implement: <code>open_peer</code>, <code>apply_schema</code>, <code>execute</code>, <code>sync</code>, <code>snapshot_hash</code>, <code>snapshot_state</code>, <code>close</code>.
+                </li>
+                <li><span class="k">Step 3 · Write your adapter</span>
+                  Create <code>adapters/myteam.py</code> as a thin shim over your engine. For non-Python engines, bridge via subprocess, gRPC, or HTTP.
+                  <pre><span class="tag">adapters/myteam.py</span><code>from adapter import Adapter
+
+class Engine(Adapter):
+    def __init__(self):
+        self.peers = {}                          # peer_id -&gt; your engine
+
+    def open_peer(self, peer_id):
+        self.peers[peer_id] = MyEngine.new()
+
+    def apply_schema(self, peer_id, stmts):
+        for s in stmts:
+            self.peers[peer_id].execute(s)
+
+    def execute(self, peer_id, sql, params=()):
+        self.peers[peer_id].execute(sql, params)
+
+    def sync(self, peer_a, peer_b):
+        self.peers[peer_a].sync_with(self.peers[peer_b])
+
+    def snapshot_hash(self, peer_id):
+        return self.peers[peer_id].state_hash()
+
+    def snapshot_state(self, peer_id):
+        return self.peers[peer_id].dump_tables()
+
+    def close(self):
+        for p in self.peers.values():
+            p.shutdown()</code></pre>
+                </li>
+                <li><span class="k">Step 4 · Self-check</span>
+                  Run the condensed battery. <code>--quick</code> uses fewer seeds for fast iteration.
+                  <pre><span class="tag">Shell</span><code>python self_check.py --adapter adapters.myteam:Engine \
+  --fk-policy tombstone --quick</code></pre>
+                  You'll see a per-axis pass/fail matrix and a weighted score. Iterate until all axes pass.
+                </li>
+                <li><span class="k">Step 5 · Full run with arbitrary seeds</span>
+                  When the condensed run is green, drop <code>--quick</code> for the full battery. Stress-test with any L2 seeds — if your engine is correct, every seed passes.
+                  <pre><span class="tag">Shell</span><code>python run.py --adapter adapters.myteam:Engine --fk-policy tombstone \
+  --randomized-seeds 9999 31415 27182 16180 11235 \
+  --rand-peers 5 --rand-ops 150 --out report.json</code></pre>
+                </li>
+              </ol>
+              <p>The bench resists hardcoding by design. Three layers of evaluation:</p>
+              <ul>
+                <li><span class="k">L1 · Canonical</span>The 3-peer trace described above. Passing is necessary but not sufficient.</li>
+                <li><span class="k">L2 · Property-based</span>Pass <code>--randomized-seeds</code> any integers. Generator produces fresh ops per seed; assertions are pure CRDT invariants — convergence, uniqueness, idempotent sync. A hardcoded solution cannot pass because the expected hash is unknown until the run.</li>
+                <li><span class="k">L3 · Adversarial</span>Held-out seeds and hand-crafted edge cases at higher parameter values. Used only at final evaluation. Not distributed.</li>
+              </ul>
+              <p class="muted">Repository · <a href="https://github.com/Sauhard74/Anvil-P-E" target="_blank" rel="noopener" style="color: var(--paper); text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 3px;">Sauhard74/Anvil-P&amp;E</a></p>
+            </div>
+          </div>
+        </section>
+      </article>
+    </section>
+
+    <!-- ============== P-02 : PERSISTENT CONTEXT ENGINE ============== -->
+    <section class="panel" id="ps-2" role="tabpanel" aria-labelledby="tab-2">
+      <aside class="side">
+        <div class="lbl">Track</div>
+        <div class="val">Open · Independent</div>
+
+        <div class="lbl">Status</div>
+        <div><span class="stamp">★ Finalized</span></div>
+
+        <div class="lbl">Domain</div>
+        <div class="val">AI · SRE · Observability · Memory</div>
+
+        <div class="lbl">Difficulty</div>
+        <div class="val mono">★★★★★ — Frontier</div>
+
+        <div class="lbl">Surface Tags</div>
+        <div class="tags">
+          <span class="tag">Operational Memory</span>
+          <span class="tag">Telemetry</span>
+          <span class="tag">Causal Graph</span>
+          <span class="tag">Temporal</span>
+          <span class="tag">Topology Drift</span>
+        </div>
+
+        <div class="lbl">Benchmark</div>
+        <div class="val mono">Public harness · L3 adversarial held out</div>
+
+        <div class="lbl">Evaluation</div>
+        <div class="judging">
+          <div class="row"><span>Incident recall</span><span>★</span></div>
+          <div class="row"><span>Context quality</span><span>★</span></div>
+          <div class="row"><span>Pattern recognition</span><span>★</span></div>
+          <div class="row"><span>Adaptability</span><span>★</span></div>
+          <div class="row"><span>Latency / scale</span><span>★</span></div>
+          <div class="row"><span>Memory evolution</span><span>★</span></div>
+        </div>
+
+        <div class="marginalia">
+          // Naive semantic retrieval, static vector<br>
+          // similarity, or keyword pipelines are<br>
+          // unlikely to clear the benchmark.<br>
+          // Build a reasoning substrate, not a search bar.
+        </div>
+      </aside>
+
+      <article>
+        <div class="eyebrow">Problem · 02 / 04 — Open Track</div>
+        <h1 class="title">Persistent Context <span class="amp">Engine</span> for autonomous SRE.</h1>
+        <p class="lede">
+          Existing observability stores telemetry. It does <em>not</em> preserve operational reasoning. Every incident forces engineers to rebuild causal chains, correlate fragmented signals, and rediscover behaviors the system has already encountered. Build the substrate that ends that loop.
+        </p>
+
+        <h2>Problem</h2>
+        <p>
+          Distributed production environments evolve continuously: services are renamed, dependencies shift, deployments mutate behavior, operational patterns drift, topology structures change. Traditional observability is optimized for visualization, querying, alerting, and short-horizon analysis — not for preserving long-term operational understanding. As complexity rises, recurring incidents reappear under different telemetry signatures, modified topologies, renamed services, or altered dependency structures.
+        </p>
+        <p class="muted">
+          Most AI-assisted observability approaches lean on semantic retrieval, embedding similarity, keyword search, static graph correlation, or incident retrieval pipelines. All degrade under topology drift, temporal evolution, noisy telemetry, partial observability, and changing infrastructure semantics. The challenge is therefore a systems problem.
+        </p>
+
+        <div class="callout">
+          <div class="lbl">Core Question</div>
+          <blockquote>
+            How can operational telemetry be transformed into persistent memory capable of <em>adaptive reasoning</em> across evolving distributed environments?
+          </blockquote>
+        </div>
+
+        <h2>System Expectations</h2>
+        <p>
+          The Persistent Context Engine functions as an operational memory substrate. Instead of storing telemetry as isolated searchable records, it should continuously synthesize evolving contextual relationships directly from operational behavior — temporal reasoning, arbitrary relationship formation, adaptive contextual reconstruction, behavioral abstraction, evolving operational associations, and topology-independent reasoning.
+        </p>
+        <p>
+          Relationships may emerge from correlated degradation, deployment adjacency, repeated co-occurrence, remediation sequences, inferred causality, operator workflows, or latent operational patterns. <em>No fixed schema or rigid ontology is mandated.</em> Dynamic edge formation and continuously evolving topology structures are first-class.
+        </p>
+        <p>
+          During incident analysis, the engine reconstructs investigation context dynamically, traverses historical operational memory, surfaces historically validated remediation pathways, identifies recurring behavioral patterns, and synthesizes signal-dense operational understanding. The expected output is not a search result. It is <em>reconstructed operational context</em>.
+        </p>
+
+        <h2>Architectural Scope</h2>
+        <p>Any architecture, infrastructure stack, or storage model. Possible directions include —</p>
+        <ul>
+          <li>Graph-based systems</li>
+          <li>Temporal memory architectures</li>
+          <li>Probabilistic structures</li>
+          <li>Distributed streaming systems</li>
+          <li>Contextual synthesis pipelines</li>
+          <li>Reinforcement-based memory systems</li>
+          <li>Hybrid indexing strategies</li>
+          <li>Custom operational memory substrates</li>
+        </ul>
+
+        <h2>Core Capabilities</h2>
+        <ol>
+          <li><span class="k">01 · Operational Ingestion</span>Continuously ingest large-scale telemetry streams. Preserve provenance and temporal ordering. Support replayability and historical operational continuity.</li>
+          <li><span class="k">02 · Dynamic Relationship Synthesis</span>Construct relationships without predefined schemas. Support evolving edge semantics. Preserve probabilistic and contradictory signals where necessary. Synthesize associations adaptively.</li>
+          <li><span class="k">03 · Long-Horizon Operational Memory</span>Preserve contextual understanding across infrastructure drift. Recognize behavioral equivalence across changing environments. Support reinforcement and decay. Maintain persistence over time.</li>
+          <li><span class="k">04 · Adaptive Context Compilation</span>At incident time, reconstruct investigation context dynamically. Prioritize high-signal understanding. Surface relevant historical behaviors. Compile context adaptively from evolving memory.</li>
+          <li><span class="k">05 · Incident Shape Recognition</span>Identify recurring operational behaviors independent of topology. Support approximate behavioral matching. Recognize evolving failure signatures. Detect operational equivalence despite telemetry drift.</li>
+          <li><span class="k">06 · Continuous Learning</span>Reinforce successful remediation pathways. Evolve contextual salience through operational feedback. Improve reconstruction quality over time.</li>
+          <li><span class="k">07 · Scalability</span>Operate under high-ingestion telemetry workloads. Maintain efficient contextual synthesis. Support low-latency operational reconstruction.</li>
+        </ol>
+
+        <h2>Benchmark &amp; Evaluation</h2>
+        <p>
+          The benchmark harness is publicly available in the linked repository and runs locally on participants' machines — pure Python, stdlib only, no external dependencies. Held-out adversarial scenarios (L3) at higher parameter values are revealed only at final evaluation. The benchmark simulates distributed production systems under evolving failure conditions. Datasets include deployment sequences, infrastructure mutations, incident timelines, remediation histories, telemetry drift, topology evolution, and changing dependency structures.
+        </p>
+        <table class="eval">
+          <thead><tr><th>Area</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td class="area">Incident Recall</td><td class="desc">Identify historically similar incidents</td></tr>
+            <tr><td class="area">Context Quality</td><td class="desc">Relevance and signal density of synthesized context</td></tr>
+            <tr><td class="area">Retrieval Accuracy</td><td class="desc">Correctness of surfaced operational memory</td></tr>
+            <tr><td class="area">Pattern Recognition</td><td class="desc">Detection of recurring operational behaviors</td></tr>
+            <tr><td class="area">Temporal Reasoning</td><td class="desc">Handling evolving infrastructure states</td></tr>
+            <tr><td class="area">Adaptability</td><td class="desc">Robustness under topology drift</td></tr>
+            <tr><td class="area">Latency</td><td class="desc">Runtime context-synthesis performance</td></tr>
+            <tr><td class="area">Scalability</td><td class="desc">Throughput under large ingestion</td></tr>
+            <tr><td class="area">Explainability</td><td class="desc">Inspectable reasoning pathways</td></tr>
+            <tr><td class="area">Memory Evolution</td><td class="desc">Improvement through operational feedback</td></tr>
+          </tbody>
+        </table>
+
+        <h2>Expected Outcome</h2>
+        <p>
+          Persistent operational memory formation. Adaptive contextual reconstruction. Recurring incident recognition. Topology-independent behavioral understanding. Evolving operational reasoning. Measurable improvement through operational feedback loops.
+        </p>
+
+        <div class="callout">
+          <div class="lbl">North Star</div>
+          <blockquote>
+            Not a dashboard. Not a log viewer. Not a retrieval wrapper. An <em>operational memory engine.</em>
+          </blockquote>
+        </div>
+
+        <section class="annex" aria-label="Spec annex">
+          <div class="annex-head">
+            <div class="annex-label">Annex A — Operational Contract</div>
+            <div class="annex-title">What to ship, how to ship it, how it will be judged.</div>
+            <div class="annex-meta">This section is binding. The manifesto above is open to interpretation; the annex is not. The public benchmark harness in the linked repository adheres to these shapes. Held-out adversarial scenarios (L3) at higher parameters are revealed only at final evaluation — your engine must conform to both.</div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Input · Telemetry Shape</div>
+            <div class="field-body">
+              <p>The engine consumes a stream of timestamped events in newline-delimited JSON. Six event kinds are guaranteed; teams may anticipate more in held-out evaluation.</p>
+              <pre><span class="tag">JSONL · sample</span><code>{"ts":"2026-05-10T14:21:30Z","kind":"deploy",  "service":"payments-svc","version":"v2.14.0","actor":"ci"}
+{"ts":"2026-05-10T14:22:01Z","kind":"log",     "service":"checkout-api","level":"error","msg":"timeout calling payments-svc","trace_id":"abc123"}
+{"ts":"2026-05-10T14:22:01Z","kind":"metric",  "service":"payments-svc","name":"latency_p99_ms","value":4820}
+{"ts":"2026-05-10T14:22:08Z","kind":"trace",   "trace_id":"abc123","spans":[{"svc":"checkout-api","dur_ms":5012},{"svc":"payments-svc","dur_ms":4980}]}
+{"ts":"2026-05-10T14:30:00Z","kind":"topology","change":"rename","from":"payments-svc","to":"billing-svc"}
+{"ts":"2026-05-10T14:32:11Z","kind":"incident_signal","incident_id":"INC-714","trigger":"alert:checkout-api/error-rate&gt;5%"}
+{"ts":"2026-05-10T15:10:00Z","kind":"remediation","incident_id":"INC-714","action":"rollback","target":"billing-svc","version":"v2.13.4","outcome":"resolved"}</code></pre>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Interface · Surface</div>
+            <div class="field-body">
+              <p>The engine exposes <strong>two operations</strong>. The public harness provides a Python adapter base class; teams may implement directly in Python or bridge via subprocess, gRPC, or HTTP to a non-Python engine.</p>
+              <pre><span class="tag">Python</span><code>class Engine:
+    def ingest(self, events: Iterable[Event]) -&gt; None: ...
+    def reconstruct_context(
+        self,
+        signal: IncidentSignal,
+        mode: Literal["fast", "deep"] = "fast",
+    ) -&gt; Context: ...</code></pre>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Output · Context Shape</div>
+            <div class="field-body">
+              <p>The output of <code>reconstruct_context</code> is a structured object — not free text. Narrative explanations live inside the <code>explain</code> field.</p>
+              <pre><span class="tag">Python</span><code>class Context(TypedDict):
+    related_events:          list[Event]            # ordered, deduped, with provenance
+    causal_chain:            list[CausalEdge]       # (cause_id, effect_id, evidence, confidence)
+    similar_past_incidents:  list[IncidentMatch]    # (past_incident_id, similarity, rationale)
+    suggested_remediations:  list[Remediation]      # (action, target, historical_outcome, confidence)
+    confidence:              float                  # overall, 0..1
+    explain:                 str                    # human-readable narrative</code></pre>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Worked Example</div>
+            <div class="field-body">
+              <p>Given the JSONL sample above, on receipt of the <code>incident_signal</code> for <code>INC-714</code>, <code>reconstruct_context(signal, mode="fast")</code> must return a Context that:</p>
+              <ul>
+                <li><span class="k">Related Events</span>Includes the v2.14.0 deploy, the latency metric, the trace, and the upstream error log — with provenance back to source events.</li>
+                <li><span class="k">Causal Chain</span>Contains an edge <em>deploy → latency spike → upstream error</em> with confidence ≥ 0.5 and evidence pointers.</li>
+                <li><span class="k">Similar Past Incidents</span><strong>The central test.</strong> If the engine has previously ingested a payments-svc deploy → rollback pattern, that match must surface despite the <code>payments-svc → billing-svc</code> rename. Topology-independent behavioral matching is non-negotiable.</li>
+                <li><span class="k">Suggested Remediation</span>"Rollback billing-svc to prior version" with confidence reflecting historical success rate.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Latency Budget</div>
+            <div class="field-body">
+              <div class="kv"><div>Ingest sustained throughput</div><div>≥ 1,000 events / sec</div></div>
+              <div class="kv"><div>Ingest lag (event → queryable)</div><div>≤ 5 s</div></div>
+              <div class="kv"><div>reconstruct_context — fast mode</div><div>p95 ≤ 2 s</div></div>
+              <div class="kv"><div>reconstruct_context — deep mode</div><div>p95 ≤ 6 s</div></div>
+              <div class="kv"><div>Cold-start to first reconstruction</div><div>≤ 60 s on the benchmark dataset</div></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Dataset Scale</div>
+            <div class="field-body">
+              <p>Two scales. The public bench runs the L2 defaults below — small enough to iterate on a laptop, large enough to surface the rename-robustness test. L3 evaluation runs at higher parameters held by the council.</p>
+              <p class="muted" style="font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mute); margin-top: 14px; margin-bottom: 6px;">L2 · Public bench defaults</p>
+              <div class="kv"><div>Time span</div><div>7 simulated days</div></div>
+              <div class="kv"><div>Services</div><div>12</div></div>
+              <div class="kv"><div>Deploys</div><div>30</div></div>
+              <div class="kv"><div>Topology mutations</div><div>8 (renames, dependency shifts)</div></div>
+              <div class="kv"><div>Incidents (train / eval)</div><div>24 train · 10 held-out eval</div></div>
+              <div class="kv"><div>Recurring incident families</div><div>5 (each with morphed signatures across renames)</div></div>
+              <div class="kv"><div>Background events</div><div>~200 per service-day (≈17k per default run)</div></div>
+              <p class="muted" style="font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mute); margin-top: 18px; margin-bottom: 6px;">L3 · Adversarial (held out)</p>
+              <p>Higher service count, denser drift, more incident families per dataset, hand-crafted scenarios (correlated multi-service outages, cascading rename chains). Exact parameters revealed only at final evaluation. You can stress-test your engine at any scale via <code>--n-services</code> and <code>--days</code>.</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Concrete Metrics</div>
+            <div class="field-body">
+              <p>Each evaluation area maps to an unambiguous number. No marketing scores.</p>
+              <ul>
+                <li><span class="k">Incident Recall</span>precision@5 and recall@5 on past-incident matching, computed across the renamed boundary.</li>
+                <li><span class="k">Context Quality</span>F1 of returned <code>related_events</code> vs ground-truth, plus judge-graded 1–5 on a sampled subset.</li>
+                <li><span class="k">Pattern Recognition</span>F1 on incident-family classification after signature morphing.</li>
+                <li><span class="k">Temporal Reasoning</span>% of <code>causal_chain</code> edges with correct ordering and source-precedes-effect under topology drift.</li>
+                <li><span class="k">Adaptability</span>Δ-metric between pre-drift and post-drift evaluation windows. Smaller drop = stronger system.</li>
+                <li><span class="k">Latency</span>Measured p95 vs the budgets above.</li>
+                <li><span class="k">Memory Evolution</span>Improvement in metrics between train-only ingestion and full ingestion.</li>
+                <li><span class="k">Explainability</span>Judge-graded 1–5 on the <code>explain</code> narrative on a sampled subset.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Dependencies</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Permitted</span>Any storage backend (Postgres, DuckDB, Neo4j, Qdrant, custom). Any embedding model. Any LLM provider. All third-party usage cost is borne by the participating team.</li>
+                <li><span class="k">Baseline Warning</span>The SDK ships a reference vector-similarity baseline. Submissions that wrap it without architectural innovation will rank near the bottom by design.</li>
+                <li><span class="k">Required</span>Every dependency disclosed in the README with version pins. Egress to external services declared.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Constraints</div>
+            <div class="field-body">
+              <div class="kv"><div>Team size</div><div>1 – 4</div></div>
+              <div class="kv"><div>Time</div><div>24 hours</div></div>
+              <div class="kv"><div>Language</div><div>Open</div></div>
+              <div class="kv"><div>Environment</div><div>Participant-provided · no compute, cloud, or cost issued by the council</div></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Submission</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Repository</span>Git link with README quickstart.</li>
+                <li><span class="k">Runner</span><code>bench/run.sh</code> ingests the published sample, runs the canonical scenario, emits a JSON report matching the SDK schema.</li>
+                <li><span class="k">Reproducibility</span>Dockerfile / Nix flake. Held-out eval will run on judges' machines.</li>
+                <li><span class="k">Demo</span>5-minute screen-recorded walkthrough of the worked example.</li>
+                <li><span class="k">Writeup</span>3-page PDF defending: memory representation, relationship-synthesis algorithm, drift-handling strategy, latency engineering, evolution mechanism.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Judging Mechanics</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Automated</span>SDK runs the benchmark against the held-out 20-incident eval set on judges' hardware. Metrics dump to JSON.</li>
+                <li><span class="k">Chaos</span>One hidden scenario, revealed at runtime: a topology shift injected mid-evaluation. System must maintain recall across the shift.</li>
+                <li><span class="k">Manual</span>Explainability and Context Quality graded by panel on sampled outputs.</li>
+                <li><span class="k">Live</span>15-minute Q&amp;A. Expect questions on memory representation, drift handling, and what specifically fails in the baseline.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Bench · Run It Yourself</div>
+            <div class="field-body">
+              <p>The full evaluation harness is open and runs on your machine. Pure Python, stdlib only, no network access, no external dependencies. Five steps from clone to score.</p>
+              <ol>
+                <li><span class="k">Step 1 · Clone</span>
+                  <pre><span class="tag">Shell</span><code>git clone https://github.com/Sauhard74/Anvil-P-E
+cd Anvil-P-E/bench-p02-context</code></pre>
+                </li>
+                <li><span class="k">Step 2 · Read the types &amp; interface</span>
+                  Open <code>schema.py</code> for the <code>Event</code> / <code>IncidentSignal</code> / <code>Context</code> TypedDicts, then <code>adapter.py</code> for the three methods every submission must implement: <code>ingest</code>, <code>reconstruct_context</code>, <code>close</code>.
+                </li>
+                <li><span class="k">Step 3 · Write your adapter</span>
+                  Create <code>adapters/myteam.py</code> as a thin shim over your engine. For non-Python engines, bridge via subprocess, gRPC, or HTTP.
+                  <pre><span class="tag">adapters/myteam.py</span><code>from adapter import Adapter
+from schema import Event, IncidentSignal, Context
+
+class Engine(Adapter):
+    def __init__(self):
+        self.store = MyMemorySubstrate()
+
+    def ingest(self, events):
+        for e in events:
+            self.store.consume(e)
+
+    def reconstruct_context(self, signal: IncidentSignal,
+                            mode="fast") -&gt; Context:
+        return self.store.reconstruct(signal, mode=mode)
+
+    def close(self):
+        self.store.shutdown()</code></pre>
+                </li>
+                <li><span class="k">Step 4 · Self-check</span>
+                  Run the condensed multi-seed battery. <code>--quick</code> uses two seeds and a small dataset for fast iteration.
+                  <pre><span class="tag">Shell</span><code>python self_check.py --adapter adapters.myteam:Engine --quick</code></pre>
+                  You'll see per-metric values (recall@5, precision@5_mean, remediation_acc, latency_p95) and a weighted automated score. Iterate to improve the weak axes.
+                </li>
+                <li><span class="k">Step 5 · Full run with arbitrary seeds</span>
+                  When metrics look healthy on <code>--quick</code>, run the full battery and stress-test with any seeds. Each seed runs in a fresh adapter instance — there is no way for caches to leak between seeds.
+                  <pre><span class="tag">Shell</span><code>python run.py --adapter adapters.myteam:Engine --mode fast \
+  --seeds 9999 31415 27182 16180 11235 \
+  --n-services 20 --days 14 --out report.json</code></pre>
+                </li>
+              </ol>
+              <p>The bench resists hardcoding by design. Three layers of evaluation:</p>
+              <ul>
+                <li><span class="k">L1 · Canonical</span>The worked example shape described above. Passing is necessary but not sufficient.</li>
+                <li><span class="k">L2 · Property-based</span>Pass <code>--seeds</code> any integers. Each seed runs in a freshly-constructed adapter — no cross-seed state leakage, no caching tricks. An engine that handles topology drift passes for any seed; a string-match baseline does not.</li>
+                <li><span class="k">L3 · Adversarial</span>Held-out seeds at higher parameter values, plus hand-crafted scenarios — correlated multi-service outages, cascading rename chains, families morphed across both rename and dependency-graph shifts. Used only at final evaluation. Not distributed.</li>
+              </ul>
+              <p class="muted">Repository · <a href="https://github.com/Sauhard74/Anvil-P-E" target="_blank" rel="noopener" style="color: var(--paper); text-decoration: underline; text-decoration-color: var(--rule); text-underline-offset: 3px;">Sauhard74/Anvil-P&amp;E</a></p>
+            </div>
+          </div>
+        </section>
+      </article>
+    </section>
+
+    <!-- ============== P-03 : OMIUM ============== -->
+    <section class="panel" id="ps-3" role="tabpanel" aria-labelledby="tab-3">
+      <aside class="side">
+        <div class="lbl">Track</div>
+        <div class="val">Sponsored · Omium</div>
+
+        <div class="lbl">Status</div>
+        <div><span class="stamp">★ Finalized</span></div>
+
+        <div class="lbl">Domain</div>
+        <div class="val">Multi-Agent · Autonomy · Observability</div>
+
+        <div class="lbl">Difficulty</div>
+        <div class="val mono">★★★☆☆ — Product Quality</div>
+
+        <div class="lbl">Surface Tags</div>
+        <div class="tags">
+          <span class="tag">Multi-Agent</span>
+          <span class="tag">Autonomy</span>
+          <span class="tag">Tool Calling</span>
+          <span class="tag">Webhooks</span>
+          <span class="tag">Tracing</span>
+          <span class="tag">Async</span>
+        </div>
+
+        <div class="lbl">Observability</div>
+        <div class="val mono">Omium SDK · optional add-on</div>
+
+        <div class="lbl">Evaluation</div>
+        <div class="judging">
+          <div class="row"><span>Problem relevance &amp; usefulness</span><span>20</span></div>
+          <div class="row"><span>Autonomous execution</span><span>25</span></div>
+          <div class="row"><span>Multi-agent workflow quality</span><span>20</span></div>
+          <div class="row"><span>Tooling &amp; integrations</span><span>15</span></div>
+          <div class="row"><span>Demo video quality</span><span>10</span></div>
+          <div class="row"><span>Architecture &amp; engineering</span><span>10</span></div>
+          <div class="row"><span>Omium tracing · bonus</span><span>+10</span></div>
+        </div>
+
+        <div class="marginalia">
+          // The product is yours. Build<br>
+          // something that ships real work.<br>
+          // Omium's SDK is available as an<br>
+          // optional tracing add-on —<br>
+          // bonus credit, not a gate.
+        </div>
+      </aside>
+
+      <article>
+        <div class="eyebrow">Problem · 03 / 04 — Sponsored Track</div>
+        <h1 class="title">Multi-agent autonomy that <span class="amp">ships</span> real work, end-to-end.</h1>
+        <p class="lede">
+          Build a real-world multi-agent autonomous pipeline that solves a meaningful real-world problem <em>end-to-end</em>. Autonomous. Long-running. Tool-using. Webhook-driven. Deep reasoning, real tool calls, real side-effects.
+        </p>
+
+        <h2>Brief</h2>
+        <p>
+          Build a real-world multi-agent autonomous pipeline that solves a meaningful real-world problem end-to-end. The system should work autonomously, handle long-running tasks, support deep reasoning, tool calling, web search, webhooks, and asynchronous task orchestration.
+        </p>
+        <p>
+          <strong>Omium's SDK is available as an optional tracing and observability layer.</strong> Teams that instrument their workflow through Omium can submit verified traces alongside the product — the dashboard becomes the verifiable record of what the system actually did. The tracing path earns bonus credit on the evaluation; it is not a gate on the core problem.
+        </p>
+
+        <h2>Required Capabilities</h2>
+        <ul>
+          <li><span class="k">Multi-Agent</span>Multiple specialised agents collaborating on a shared task — not a single LLM wrapped in retry logic.</li>
+          <li><span class="k">Autonomy</span>Real autonomous task execution. The system completes meaningful work without continuous human steering.</li>
+          <li><span class="k">Long-Running</span>Workflows that run beyond the lifetime of a single request. Crash-safe enough to demo reliably.</li>
+          <li><span class="k">Deep Reasoning</span>The agent decomposes, plans, and reflects. Not a single-shot prompt.</li>
+          <li><span class="k">Tool Calling</span>The agent reaches out — APIs, code execution, data sources, files.</li>
+          <li><span class="k">Web Search</span>The system can pull live web information when the task requires it.</li>
+          <li><span class="k">Webhooks</span>External event ingress — the workflow reacts to the world, not only to user prompts.</li>
+          <li><span class="k">Async Orchestration</span>Tasks fan out, complete on their own timeline, return to the planner.</li>
+        </ul>
+
+        <h3>Optional · Bonus Track</h3>
+        <ul>
+          <li><span class="k">Omium SDK Tracing</span>Instrument the workflow through Omium's SDK so every meaningful action — agent step, tool call, webhook fire, async dispatch — produces a verifiable trace on the Omium dashboard. Earns bonus credit on the evaluation. Not required for the core submission.</li>
+        </ul>
+
+        <div class="callout">
+          <div class="lbl">North Star</div>
+          <blockquote>
+            A demo that runs. A product someone would actually use. End-to-end work, completed without a human in the loop.
+          </blockquote>
+        </div>
+
+        <h2>Evaluation</h2>
+        <p class="muted">Six core axes total 100%. Omium verified tracing earns an additional +10% bonus on top.</p>
+        <ol>
+          <li><span class="k">01 · Problem Relevance &amp; Usefulness · 20%</span>
+            Solves a real and meaningful problem. Clear target users and practical value. Product feels usable beyond a hackathon demo. Strong UX and polished workflow.
+          </li>
+          <li><span class="k">02 · Autonomous Execution · 25%</span>
+            Completes tasks with minimal or no human intervention. Agents make decisions independently. Handles retries, failures, and branching flows. Demonstrates true autonomy instead of scripted prompts.
+          </li>
+          <li><span class="k">03 · Multi-Agent Workflow Quality · 20%</span>
+            Clear separation of agent responsibilities. Effective coordination and task handoff. Depth of reasoning and planning. Sophisticated orchestration across agents.
+          </li>
+          <li><span class="k">04 · Tooling &amp; Integrations · 15%</span>
+            Effective use of APIs, databases, files, code execution, webhooks, and similar. Real side-effects produced by the system. Proper async execution and long-running task handling. Meaningful use of web search and live data.
+          </li>
+          <li><span class="k">05 · Demo Video Quality &amp; Execution · 10%</span>
+            Video clearly showcases the complete workflow end-to-end. Smooth and reliable execution without major failures or interruptions. Clear storytelling, presentation, and problem explanation. Autonomous task completion demonstrated in a realistic scenario. Easy to follow agent flow, tool usage, and final outcome.
+          </li>
+          <li><span class="k">06 · Technical Architecture &amp; Engineering · 10%</span>
+            Clean architecture and maintainable codebase. Scalability and modularity. Proper observability and logging. Thoughtful system design choices.
+          </li>
+        </ol>
+
+        <h3>Bonus · Omium Verified Tracing · +10%</h3>
+        <ul>
+          <li><span class="k">Coverage</span>Complete tracing coverage using the Omium SDK across every meaningful step.</li>
+          <li><span class="k">Causal Linking</span>Workflows and sub-agents causally linked in the trace graph.</li>
+          <li><span class="k">Demo Match</span>Dashboard clearly matches demo execution — same workflow, same steps, same outcome.</li>
+          <li><span class="k">Debugging Quality</span>High observability — the trace makes the system's decisions inspectable and explainable.</li>
+        </ul>
+
+        <h2>Submission</h2>
+        <p>
+          The core submission is the product itself — source code, demo, and writeup. If you have wired up Omium tracing, you may additionally submit the traced workflow (dashboard URL or export) for bonus credit. The trace is a value-add artifact, not a gating requirement.
+        </p>
+
+        <section class="annex" aria-label="Spec annex">
+          <div class="annex-head">
+            <div class="annex-label">Annex A — Operational Contract</div>
+            <div class="annex-title">What gets submitted, how it gets demoed, how traces get verified.</div>
+            <div class="annex-meta">The sponsor authored the brief above. This annex captures the operational specifics required for comparable submissions across teams. Anything not specified here is left to team judgement.</div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Demo Surface</div>
+            <div class="field-body">
+              <p>The live demo must show the system running a non-trivial task end-to-end. Concretely, judges should see:</p>
+              <ul>
+                <li><span class="k">Trigger</span>The workflow kicks off — user input, a webhook fire, or a scheduled event.</li>
+                <li><span class="k">Multi-Agent Collaboration</span>At least two distinct agents handing work off, not a single LLM in a retry loop.</li>
+                <li><span class="k">Tool Use</span>At least one external tool invocation that produces a verifiable side-effect (API call, file written, message sent).</li>
+                <li><span class="k">Async / Long-Running</span>Some part of the workflow runs beyond the demo's interactive window — a queued job, a webhook callback, a long tool call.</li>
+                <li><span class="k">Completion</span>The workflow finishes a meaningful unit of work, not just "I planned the steps."</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Omium · Optional Bonus</div>
+            <div class="field-body">
+              <p>Omium's SDK is offered as an optional tracing and observability layer. Teams that opt in unlock the bonus evaluation axis. The bar for the bonus, if you take it:</p>
+              <ul>
+                <li><span class="k">All Steps Traced</span>Every agent invocation, tool call, webhook fire, and async dispatch instrumented through the Omium SDK.</li>
+                <li><span class="k">Causal Threading</span>Traces preserve the causal chain — a parent step links to its children; a webhook-triggered subworkflow links back to its origin.</li>
+                <li><span class="k">Live Verifiable</span>Judges open the Omium dashboard during the demo and find the same workflow they just watched run.</li>
+                <li><span class="k">Complete Coverage</span>If a step happened in the product, it appears in Omium. Untraced side-effects do not count toward the bonus.</li>
+              </ul>
+              <p class="muted">Teams that skip Omium are not penalised on the core axes. The bonus is purely additive.</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Suggested Problem Spaces</div>
+            <div class="field-body">
+              <p>The "real-world problem" choice is yours. Strong candidates use the required capabilities naturally — autonomous workflows that look contrived will score lower on usefulness. Open directions:</p>
+              <ul>
+                <li><span class="k">Research → Action</span>An agent that watches an inbox, source feed, or webhook stream, decides what's worth investigating, runs the investigation across the web + APIs, and delivers an action (PR, ticket, email, report).</li>
+                <li><span class="k">Operations Copilot</span>A pipeline that ingests operational signals (alerts, logs, deploys) and autonomously triages — pulls runbooks, runs diagnostics via tool calls, escalates with a written summary.</li>
+                <li><span class="k">Personal/Team Agent</span>An autonomous workflow attached to a team's existing tools (Slack, Linear, Notion, GitHub) that handles recurring chores end-to-end with webhook triggers.</li>
+                <li><span class="k">Domain Workflow</span>A vertical autonomous pipeline — legal research, recruiting outreach, market scanning, lead qualification — where deep reasoning and tool use are load-bearing.</li>
+              </ul>
+              <p class="muted">The list is non-binding. Originality counts.</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Dependencies</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Permitted</span>Any agent framework (custom, LangGraph, AutoGen, CrewAI, etc.), any LLM provider, any tool surface. Disclose all dependencies in the README.</li>
+                <li><span class="k">Optional</span>The Omium SDK as a tracing/observability layer for the bonus axis. Sponsor-provided access details distributed at event start to teams that opt in.</li>
+                <li><span class="k">Cost</span>All third-party usage is borne by the participating team.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Constraints</div>
+            <div class="field-body">
+              <div class="kv"><div>Team size</div><div>1 – 4</div></div>
+              <div class="kv"><div>Time</div><div>24 hours</div></div>
+              <div class="kv"><div>Language</div><div>Open</div></div>
+              <div class="kv"><div>Environment</div><div>Participant-provided · no compute, cloud, or cost issued by the council</div></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Submission</div>
+            <div class="field-body">
+              <p class="muted">Core artifacts — required of every team:</p>
+              <ul>
+                <li><span class="k">Product</span>Git repository link with the source. README with a quickstart that produces a green demo run on a clean machine.</li>
+                <li><span class="k">Demo</span>5-minute screen-recorded walkthrough of the product completing a meaningful end-to-end task.</li>
+                <li><span class="k">Writeup</span>3-page PDF: problem chosen, agent architecture, tool surface, what makes the workflow autonomous in practice.</li>
+              </ul>
+              <p class="muted">Bonus artifact — only if you opt into Omium tracing:</p>
+              <ul>
+                <li><span class="k">Traced Workflow</span>The Omium dashboard URL (or export) showing at least one complete end-to-end run of the demo workflow. Unlocks the verified-traces bonus.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Judging Mechanics</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Demo Video</span>The submitted screen-recorded video is the primary surface for axes 01, 02, 04, and 05. It must clearly showcase the end-to-end autonomous workflow.</li>
+                <li><span class="k">Live</span>Judges run the demo on your machine for reliability verification and Q&amp;A. A polished crash-handling story beats an ambitious crash.</li>
+                <li><span class="k">Code Review</span>Repository graded against axis 06 — architecture, modularity, observability, system design choices.</li>
+                <li><span class="k">Manual</span>Product polish, workflow complexity, autonomous-execution quality graded by panel against the six axes.</li>
+                <li><span class="k">Trace Audit · Bonus</span>For teams that submit Omium traces, judges open the dashboard and confirm coverage, causal linking, and that it matches the demo execution. Coverage quality determines the bonus magnitude (up to +10%).</li>
+                <li><span class="k">Q&amp;A</span>15-minute panel. Expect questions on agent decomposition, tool design, retry/branching strategy, and how you achieved autonomy under demo conditions.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </article>
+    </section>
+
+    <!-- ============== P-04 : METACOGNITION · PCAM ============== -->
+    <section class="panel" id="ps-4" role="tabpanel" aria-labelledby="tab-4">
+      <aside class="side">
+        <div class="lbl">Track</div>
+        <div class="val">Sponsored · MetaCognition · PCAM</div>
+
+        <div class="lbl">Status</div>
+        <div><span class="stamp">★ Finalized</span></div>
+
+        <div class="lbl">Domain</div>
+        <div class="val">Associative Memory · Inference-Time Control</div>
+
+        <div class="lbl">Difficulty</div>
+        <div class="val mono">★★★★☆ — Research-Adjacent</div>
+
+        <div class="lbl">Surface Tags</div>
+        <div class="tags">
+          <span class="tag">PCAM</span>
+          <span class="tag">Attractor</span>
+          <span class="tag">Hopfield</span>
+          <span class="tag">Inference-Time</span>
+        </div>
+
+        <div class="lbl">Scoring · 100 pts</div>
+        <div class="judging">
+          <div class="row"><span>Retrieval accuracy</span><span>70</span></div>
+          <div class="row"><span>Anisotropy check</span><span>20</span></div>
+          <div class="row"><span>Code quality</span><span>10</span></div>
+        </div>
+
+        <div class="marginalia">
+          // The energy function defines what<br>
+          // is remembered. The precision operator<br>
+          // controls how retrieval unfolds.<br>
+          // — PCAM · NeurIPS 2026
+        </div>
+      </aside>
+
+      <article>
+        <div class="eyebrow">Problem · 04 / 04 — Sponsored Track</div>
+        <h1 class="title">Steer a memory system with <span class="amp">precision</span> — no retraining required.</h1>
+        <p class="lede">
+          We give you a memory system with patterns already stored. A noisy version of one of those patterns comes in. Your job is to build a small inference agent that decides — per dimension — how aggressively the system should pull toward the right answer. <em>Modern Hopfield networks have one knob for this. Our PCAM system has 64. Your agent decides them all.</em>
+        </p>
+
+        <h2>The Task in Plain English</h2>
+        <p>
+          Imagine you've stored 200 patterns in a system — think of them as memories. The patterns sit as <em>valleys</em> in an energy landscape. When a corrupted version of one comes in, the system rolls downhill from the noisy starting point into the nearest valley. Most of the time it lands in the right one. Sometimes — especially under heavy noise — it lands in a neighbour's valley.
+        </p>
+        <p>
+          What you control is the <strong>rolling speed along each direction</strong>. Set it well and corrupted queries land in the correct valley even when they're close to the boundary. That per-direction speed control is called <em>precision</em>, and it's a list of 64 positive numbers — one per dimension.
+        </p>
+
+        <h2>Why This Is Novel</h2>
+        <p>
+          Classical and Modern Hopfield networks expose <em>one</em> global knob (an inverse-temperature scalar) for inference-time control. Our PCAM paper introduces <em>64 independent knobs</em> — the precision operator Π — and proves you can use them at inference time to reshape how retrieval unfolds without retraining anything.
+        </p>
+        <p>
+          <strong>Implementing and meaningfully exploiting precision is the novelty of this track.</strong> Setting all 64 values to 1 (the identity baseline) is the floor. Any agent that doesn't actually use precision in a principled way scores at the floor.
+        </p>
+
+        <h2>What You Build</h2>
+        <p>One function. That's the whole agent.</p>
+        <pre><span class="tag">Python</span><code>def predict_precision(corrupted_query):
+    """
+    corrupted_query : a 64-dim vector (the noisy input)
+    returns         : 64 positive numbers — your precision weights
+    """
+    ...</code></pre>
+        <p>
+          The harness handles the rest. It takes your precision values, runs the PCAM dynamics for you, observes where the system converges, and checks whether the answer matches the original stored pattern.
+        </p>
+
+        <h2>A Concrete Example</h2>
+        <p>
+          You receive a corrupted MNIST <em>"7"</em> with 40% of pixels masked. Your agent inspects the query and decides:
+        </p>
+        <ul>
+          <li><span class="k">High precision</span>On dimensions that look reliable — say, the diagonal stroke of the 7 that survived the masking.</li>
+          <li><span class="k">Low precision</span>On dimensions that look noisy — masked or distorted regions you don't trust.</li>
+        </ul>
+        <p>
+          The PCAM dynamics, weighted by your precision, pull the query toward the "7" attractor instead of the "1" attractor it might otherwise hit. That's the whole game.
+        </p>
+
+        <h2>How to Design Your Agent</h2>
+        <p>Open-ended. A few directions to consider:</p>
+        <ul>
+          <li><span class="k">Variance-Based</span>Estimate which dimensions look noisy from the query alone; down-weight those, up-weight the rest.</li>
+          <li><span class="k">Class-Conditional</span>Run a quick first-pass to guess the class, then set precision to match what queries of that class typically look like.</li>
+          <li><span class="k">Geometry-Aware</span>Use the local curvature of the energy landscape at the nearest attractor to pick precision values that balance convergence rates across directions.</li>
+          <li><span class="k">Neural</span>Train a small MLP that maps corrupted queries to good precision vectors — supervised on retrieval accuracy.</li>
+          <li><span class="k">Hybrid</span>Combine any of the above.</li>
+        </ul>
+
+        <h2>How We Check Your Work</h2>
+        <p>Two checks. Both run on a laptop in under 10 minutes per submission. That's it.</p>
+
+        <h3>Check 1 · Retrieval Accuracy (70%)</h3>
+        <p>
+          We run corrupted queries through the PCAM dynamics using your precision weights and measure how often the dynamics converge to the correct original stored pattern. Compared against the identity-precision baseline, your agent should produce a measurable accuracy gain. Submissions below the baseline score zero on this axis. Full marks at Δ = 0.08 — meaningfully exceeding the paper's class-conditional headline gain.
+        </p>
+
+        <h3>Check 2 · Anisotropy Improvement (20%)</h3>
+        <p>
+          For sampled stored patterns we compute the local landscape curvature <em>at the true equilibrium</em>, then apply your precision and measure how uniformly the dynamics converge across all 64 directions. Smaller spread = healthier landscape. Full marks at 5× reduction; the paper achieves ~30× with explicit alignment.
+        </p>
+
+        <h3>Code Quality (10%)</h3>
+        <p>
+          Working code, clean README, brief writeup explaining your design.
+        </p>
+
+        <h2>Reading Your Results</h2>
+        <p>When you run <code>self_check.py</code>, you'll see a per-seed table and an aggregated score block. Sample output:</p>
+        <pre><span class="tag">Output · example</span><code>ANVIL · P-04 · PCAM Precision Agent — Self-Check
+==============================================================
+  total wall time            9612.4 ms
+  seeds                            2
+  stored patterns (K)             16
+  state dim (N)                   64
+  noise levels             [0.7, 0.8]
+
+  PER-SEED  ─ retrieval ─       ── anisotropy ──
+  seed      Π=I      agent  Δ     base    agent  ratio
+  ----------------------------------------------------------
+    42     0.790    0.870  +0.080   12.18    1.45   8.42×
+   101     0.760    0.840  +0.080   12.33    1.52   8.11×
+
+  AGGREGATED                       VALUE
+  ----------------------------------------------------------
+  mean Δ accuracy (over seeds)    +0.080
+  min  Δ accuracy (worst seed)    +0.080
+  mean spread reduction             8.27×
+  min  spread reduction             8.11×
+
+  SCORE (automated, max 90)         POINTS
+  ----------------------------------------------------------
+  retrieval     (max 70)            70.00
+  anisotropy    (max 20)            18.36
+  code quality  (max 10)            (manual)
+  TOTAL AUTOMATED                   88.36 / 90</code></pre>
+
+        <h3>What the numbers mean — Retrieval Δ</h3>
+        <p>Mean improvement in accuracy over the Π=I baseline, averaged across all seeds. A bigger number is always better; the score is linear up to a cap. The bar is set above the paper's headline gain so reproducing the paper alone is not full marks.</p>
+        <table class="eval">
+          <thead><tr><th>Mean Δ</th><th>What it signifies</th></tr></thead>
+          <tbody>
+            <tr><td class="area">Δ ≤ 0.00</td><td class="desc">At or below baseline · zero on this axis · precision is not helping retrieval</td></tr>
+            <tr><td class="area">0.00 – 0.02</td><td class="desc">Marginal · some signal, agent isn't reading corruption sharply</td></tr>
+            <tr><td class="area">0.02 – 0.05</td><td class="desc">Solid · principled agent · approaching paper's class-conditional gain</td></tr>
+            <tr><td class="area">0.05 – 0.08</td><td class="desc">Strong · materially beating paper-level designs</td></tr>
+            <tr><td class="area">≥ 0.08</td><td class="desc">Full marks (70 pts) · real engineering ambition beyond the paper</td></tr>
+          </tbody>
+        </table>
+
+        <h3>What the numbers mean — Anisotropy Spread Reduction</h3>
+        <p>How much more uniform the convergence rates are under your precision, averaged across sampled attractors and seeds. The paper achieves ~30× with an explicitly aligned construction; we set full marks at 5× so disciplined Hessian-aware designs can reach it.</p>
+        <table class="eval">
+          <thead><tr><th>Factor</th><th>What it signifies</th></tr></thead>
+          <tbody>
+            <tr><td class="area">≤ 1.0×</td><td class="desc">At baseline or worse · zero on this axis</td></tr>
+            <tr><td class="area">1.0× – 1.5×</td><td class="desc">Marginal isotropisation · partial credit · log-scaled</td></tr>
+            <tr><td class="area">1.5× – 3.0×</td><td class="desc">Reading local geometry · log-scaled toward full marks</td></tr>
+            <tr><td class="area">3.0× – 5.0×</td><td class="desc">Strong Hessian awareness</td></tr>
+            <tr><td class="area">≥ 5.0×</td><td class="desc">Full marks (20 pts) · disciplined alignment</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Per-seed penalties</h3>
+        <p>The score is built to reward agents that work <em>consistently</em>, not agents that win on one seed and regress on another:</p>
+        <ul>
+          <li><span class="k">Δ &lt; 0 on any seed</span>Retrieval score is halved. An agent that beats baseline on the canonical seed but breaks on a held-out seed cannot earn full marks.</li>
+          <li><span class="k">Spread ≤ 1.0× on any seed</span>Anisotropy score is halved. Same logic applied to geometry.</li>
+        </ul>
+
+        <h3>Common combinations and what they signify</h3>
+        <table class="eval">
+          <thead><tr><th>Δ</th><th>Spread</th><th>Diagnosis</th></tr></thead>
+          <tbody>
+            <tr><td class="area">≈ 0</td><td class="desc">≈ 1×</td><td class="desc">Agent is effectively π = 1 — no modulation in effect</td></tr>
+            <tr><td class="area">≈ 0</td><td class="desc">High</td><td class="desc">Geometry shaped but retrieval not improved — likely pulling toward a wrong attractor</td></tr>
+            <tr><td class="area">Positive</td><td class="desc">≈ 1×</td><td class="desc">Heuristic helps retrieval but isn't grounded in the Hessian — fine, but capped</td></tr>
+            <tr><td class="area">Positive</td><td class="desc">High</td><td class="desc">Cracked it — precision is both useful and principled</td></tr>
+            <tr><td class="area">Negative</td><td class="desc">Any</td><td class="desc">Precision is hurting retrieval — clip or normalisation bug, or wrong sign</td></tr>
+          </tbody>
+        </table>
+
+        <div class="callout">
+          <div class="lbl">North Star</div>
+          <blockquote>
+            The best agents won't be the most complex. They'll be the ones that actually use the per-direction control PCAM provides — and prove the theory works in practice across <em>any</em> seed.
+          </blockquote>
+        </div>
+
+        <section class="annex" aria-label="Spec annex">
+          <div class="annex-head">
+            <div class="annex-label">Annex A — How to Get Started</div>
+            <div class="annex-title">The starter kit, the agent interface, the tests, and what we expect.</div>
+            <div class="annex-meta">Everything you need lives in <code>bench-p04-pcam/</code>. Pure Python · NumPy only · runs on a laptop in under 10 minutes.</div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">The Agent Interface</div>
+            <div class="field-body">
+              <p>One class with one method. Implement it in <code>adapters/myteam.py</code>:</p>
+              <pre><span class="tag">adapters/myteam.py</span><code>from adapter import Adapter
+import numpy as np
+
+class Engine(Adapter):
+    def __init__(self, stored_patterns, model_params):
+        """
+        stored_patterns : ndarray (K, 64) — the K patterns already stored
+        model_params    : dict with frozen system parameters (R, eta, beta, ...)
+        """
+        self.X = stored_patterns
+        self.N = stored_patterns.shape[1]
+        # any one-time prep here — train a model, compute statistics, etc.
+
+    def predict_precision(self, corrupted_query):
+        """
+        corrupted_query : ndarray (64,) — the noisy input
+        returns         : ndarray (64,) — 64 positive precision values
+        """
+        return np.ones(self.N)   # this is the identity baseline</code></pre>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">What the Starter Kit Provides</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">PCAM Model</span>Frozen energy, gradient, dynamics integrator. You never modify this code — that's the constraint.</li>
+                <li><span class="k">Stored Patterns</span>K = 200 patterns ready to use. Same patterns for every team.</li>
+                <li><span class="k">Test Queries</span>Pre-generated corrupted queries with known ground truth. Deterministic per seed.</li>
+                <li><span class="k">Adapter Base Class</span>Defines the one method you implement.</li>
+                <li><span class="k">Baseline Agent</span>An identity-precision dummy so you can see the harness work end-to-end before you write anything.</li>
+                <li><span class="k">Test Runner</span>One command to evaluate your agent and get a score.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">The Two Tests, Concretely</div>
+            <div class="field-body">
+              <p><strong>Test A — Retrieval Accuracy</strong></p>
+              <div class="kv"><div>Stored patterns (K)</div><div>16 (twin-paired for realistic ambiguity)</div></div>
+              <div class="kv"><div>State dimension (N)</div><div>64</div></div>
+              <div class="kv"><div>Test queries</div><div>250 per noise level × 3 levels = 750 per seed</div></div>
+              <div class="kv"><div>Noise levels</div><div>p ∈ {0.5, 0.7, 0.8} — combined mask + Gaussian</div></div>
+              <div class="kv"><div>Metric</div><div>Δ accuracy = agent − Π=I baseline, averaged across seeds</div></div>
+              <div class="kv"><div>Seeds (default)</div><div>5 seeds — agent must work for all of them</div></div>
+
+              <p style="margin-top: 18px"><strong>Test B — Anisotropy Spread Check</strong></p>
+              <div class="kv"><div>Patterns sampled</div><div>16 per seed</div></div>
+              <div class="kv"><div>Procedure</div><div>Hessian at each attractor → apply your precision → measure spread of Π^½ H Π^½</div></div>
+              <div class="kv"><div>Metric</div><div>Spread reduction vs Π=I (paper achieves ~30×)</div></div>
+
+              <p style="margin-top: 18px"><strong>Total runtime</strong> — ~10 seconds quick mode (2 seeds), ~5 minutes full evaluation (5 seeds, full query count) on a laptop CPU.</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Anti-Gaming · Three Layers</div>
+            <div class="field-body">
+              <p>The bench is built so hardcoded solutions cannot pass. Same three-layer model as P-01 and P-02:</p>
+              <ul>
+                <li><span class="k">L1 · Canonical seed</span>A fixed seed (42) drives the patterns, the structured operator R, and the queries. Passing L1 alone means your agent works on one known instance — necessary but not sufficient.</li>
+                <li><span class="k">L2 · Property-based multi-seed</span>The <code>--seeds</code> flag accepts ANY integers. For each seed the harness builds a <strong>fresh pattern matrix, fresh R, fresh queries</strong> and <strong>constructs a fresh adapter instance</strong>. No state leaks between seeds. A hardcoded agent passes L1 trivially and fails L2 immediately because every numeric value it was tuned against is regenerated.</li>
+                <li><span class="k">L3 · Held-out adversarial</span>The council holds private seeds at higher K and N, plus the eventual PCA-MNIST swap. Used only at final evaluation. Not distributed.</li>
+              </ul>
+              <p>Per-seed penalty gates:</p>
+              <ul>
+                <li><span class="k">Δ &lt; 0 on any seed</span>Retrieval score is halved. Agents that beat baseline on canonical and regress on a held-out seed cannot earn full marks.</li>
+                <li><span class="k">Spread ≤ 1.0× on any seed</span>Anisotropy score is halved. Same logic, applied to geometry.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Scoring</div>
+            <div class="field-body">
+              <table class="eval">
+                <thead><tr><th>Check</th><th>Weight</th><th>How it scores</th></tr></thead>
+                <tbody>
+                  <tr><td class="area">Retrieval Accuracy</td><td class="desc">70%</td><td class="desc">Linear in mean Δ accuracy (across seeds); full at Δ ≥ 0.08; halved if any seed regresses below baseline</td></tr>
+                  <tr><td class="area">Anisotropy Check</td><td class="desc">20%</td><td class="desc">Log-scaled mean spread reduction; full at 5×; halved if any seed shows ≤ 1× reduction</td></tr>
+                  <tr><td class="area">Code Quality</td><td class="desc">10%</td><td class="desc">Manual — working code, reproducibility, README</td></tr>
+                </tbody>
+              </table>
+              <p class="muted">A submission cannot earn retrieval points without beating the Π=I baseline on average across seeds — you must actually use precision meaningfully, on more than one instance.</p>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Submission</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Agent</span><code>adapters/&lt;yourteam&gt;.py</code> with your <code>Engine</code> class implementing <code>predict_precision</code>.</li>
+                <li><span class="k">README</span>1 page — your approach, setup steps, any dependencies beyond NumPy.</li>
+                <li><span class="k">Repo</span>Git link with the above plus any training scripts if you trained an offline model.</li>
+                <li><span class="k">Optional</span>A short note tying your design back to the paper (no formal proofs required).</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Bench · Run It Yourself</div>
+            <div class="field-body">
+              <ol>
+                <li><span class="k">Step 1 · Clone &amp; install</span>
+                  <pre><span class="tag">Shell</span><code>git clone https://github.com/Sauhard74/Anvil-P-E
+cd Anvil-P-E/bench-p04-pcam
+pip install -r requirements.txt</code></pre>
+                </li>
+                <li><span class="k">Step 2 · See the baseline run</span>
+                  <pre><span class="tag">Shell</span><code>python self_check.py --adapter adapters.dummy:DummyAgent --quick</code></pre>
+                  This is the Π=I floor. Your agent must beat this on retrieval accuracy.
+                </li>
+                <li><span class="k">Step 3 · Write your agent</span>
+                  Copy <code>adapters/dummy.py</code> to <code>adapters/myteam.py</code> and replace the <code>predict_precision</code> body with your logic.
+                </li>
+                <li><span class="k">Step 4 · Self-check while iterating</span>
+                  <pre><span class="tag">Shell</span><code>python self_check.py --adapter adapters.myteam:Engine --quick</code></pre>
+                  Compare your accuracy and spread reduction against the dummy.
+                </li>
+                <li><span class="k">Step 5 · Full evaluation across many seeds</span>
+                  <pre><span class="tag">Shell</span><code>python run.py --adapter adapters.myteam:Engine \
+  --seeds 7 13 31 97 211 503 1009 --out report.json</code></pre>
+                  Same harness the judges run. If your agent is principled, every seed should pass. Aim for mean Δ ≥ 0.05 on retrieval and ≥ 10× on spread, with no per-seed regressions.
+                </li>
+              </ol>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">FAQ</div>
+            <div class="field-body">
+              <ul>
+                <li><span class="k">Can I retrain the PCAM model?</span>No. The base system is frozen. You only design the agent that picks precision.</li>
+                <li><span class="k">Can I use a neural net?</span>Yes. Train it on the provided patterns before the hackathon if you want. The trained weights live inside your agent.</li>
+                <li><span class="k">Can I look at the test queries before submission?</span>The bench has a public seed set you iterate against. Judges run on a held-out seed set with the same generator.</li>
+                <li><span class="k">What if my precision values blow up the dynamics?</span>The harness clips precision to [0.1, 10.0] and re-normalises mean to 1 before applying. Stay within that range and you're fine.</li>
+                <li><span class="k">Do I need a GPU?</span>No. The whole bench runs on CPU in under 10 minutes.</li>
+                <li><span class="k">Team size?</span>Solo or up to 3 — same as the other tracks.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label">Optional · Going Deeper</div>
+            <div class="field-body">
+              <p>If you want to ground your design in the paper's theory, the most useful results are:</p>
+              <ul>
+                <li><span class="k">Theorem F3</span>Precision rescales per-direction convergence rates by the eigenvalues of ΠH. Choosing precision to balance these rates is what produces the ~30× spread reduction in the paper.</li>
+                <li><span class="k">Theorem 7</span>Equilibria shift continuously with precision at a bounded rate — this is what lets your agent steer the attractor without destabilising it.</li>
+                <li><span class="k">Section 6.6</span>The paper's class-conditional design Π*class achieves a ~2.5% accuracy gain over uniform precision on PCA-MNIST at high noise. A good starting point — and beatable.</li>
+              </ul>
+              <p>You don't need to derive anything; the bench handles the math. But understanding <em>why</em> precision works will make your agent design sharper.</p>
+            </div>
+          </div>
+        </section>
+      </article>
+    </section>
+
+  </main>
+
+  <footer class="colophon">
+    <div>Anvil · MMXXVI · Technical Council Draft · Confidential</div>
+    <div class="kbd">Navigate <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd> · <kbd>←</kbd><kbd>→</kbd></div>
+    <div>Rev 14·05·2026 · 4 of 4 slots closed</div>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const panels = Array.from(document.querySelectorAll('.panel'));
+
+    function activate(i) {
+      tabs.forEach((t, k) => t.setAttribute('aria-selected', k === i ? 'true' : 'false'));
+      panels.forEach((p, k) => {
+        if (k === i) {
+          p.setAttribute('data-active', 'true');
+          // re-trigger animation
+          p.style.animation = 'none';
+          // force reflow
+          void p.offsetWidth;
+          p.style.animation = '';
+        } else {
+          p.removeAttribute('data-active');
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => activate(i));
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      const idx = tabs.findIndex(t => t.getAttribute('aria-selected') === 'true');
+      if (['1','2','3','4'].includes(e.key)) { activate(Number(e.key) - 1); }
+      if (e.key === 'ArrowRight') { activate((idx + 1) % tabs.length); }
+      if (e.key === 'ArrowLeft')  { activate((idx - 1 + tabs.length) % tabs.length); }
+    });
+  })();
+</script>
+
+</body>
+</html>
